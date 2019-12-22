@@ -36,7 +36,7 @@ The cluster was a vanilla instance of [kind] with some additional lightweight [R
 To replicate the setup execute the following from this directory:
 1. `kind create cluster --name honkctl`
 2. `kubectl apply -f k8s/`
-3. `docker exec kind-honkctl sed -i 's/NodeRestriction/NodeRestriction,PodSecurityPolicy/g' /etc/kubernetes/manifests/kube-apiserver.yaml`
+3. `docker exec honkctl-control-plane sed -i 's/NodeRestriction/NodeRestriction,PodSecurityPolicy/g' /etc/kubernetes/manifests/kube-apiserver.yaml`
 4. `docker restart kind-honkctl`
 5. `./goose.sh`
 
