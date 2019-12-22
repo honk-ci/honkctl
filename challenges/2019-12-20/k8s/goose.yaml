@@ -1,0 +1,95 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: lake
+  labels:
+    name: lake
+    rake: 'true'
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: goose
+  namespace: lake
+  labels:
+    naughty: 'true'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: naughty-goose
+  namespace: lake
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: admin
+subjects:
+- kind: ServiceAccount
+  name: goose
+  namespace: lake
+---
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  annotations:
+    apparmor.security.beta.kubernetes.io/allowedProfileNames: 'runtime/default'
+    apparmor.security.beta.kubernetes.io/defaultProfileName:  'runtime/default'
+    seccomp.security.alpha.kubernetes.io/allowedProfileNames: 'docker/default'
+    seccomp.security.alpha.kubernetes.io/defaultProfileName:  'docker/default'
+  name: naughty-goose
+spec:
+  defaultAddCapabilities:
+  - CAP_AUDIT_WRITE
+  - NET_BIND_SERVICE
+  - KILL
+  requiredDropCapabilities:
+  - ALL
+  allowPrivilegeEscalation: false
+  hostIPC: false
+  hostNetwork: false
+  hostPID: false
+  privileged: false
+  readOnlyRootFilesystem: false
+  runAsUser:
+    rule: 'RunAsAny'
+  seLinux:
+    rule: 'RunAsAny'
+  supplementalGroups:
+    rule: 'RunAsAny'
+  fsGroup:
+    rule: 'RunAsAny'
+  volumes:
+  - 'configMap'
+  - 'downwardAPI'
+  - 'emptyDir'
+  - 'persistentVolumeClaim'
+  - 'projected'
+  - 'secret'
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: psp-naughty-goose
+rules:
+- apiGroups:
+  - policy
+  resourceNames:
+  - naughty-goose
+  resources:
+  - podsecuritypolicies
+  verbs:
+  - use
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: psp-naughty-goose
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: psp-naughty-goose
+subjects:
+- kind: ServiceAccount
+  name: goose
+  namespace: lake

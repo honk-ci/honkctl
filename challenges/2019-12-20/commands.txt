@@ -1,0 +1,5 @@
+commands for tonight
+(kubectl) *
+ls
+cat
+avada kadavra ___ (use at your peril)
