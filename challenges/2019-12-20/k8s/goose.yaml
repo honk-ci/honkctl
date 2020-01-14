@@ -39,7 +39,7 @@ metadata:
   name: naughty-goose
 spec:
   defaultAddCapabilities:
-  - CAP_AUDIT_WRITE
+  - AUDIT_WRITE
   - NET_BIND_SERVICE
   - KILL
   requiredDropCapabilities:
