@@ -1,0 +1,72 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: goose
+  namespace: garden
+  labels:
+    naughty: 'true'
+---
+# Default view for the goose
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: naughty-goose
+  namespace: garden
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: view
+subjects:
+- kind: ServiceAccount
+  name: goose
+  namespace: garden
+---
+# No one has permission to create objects within "home".
+# To bring the bell home, a person must either get cluster admin rights or 
+# specify home as the namespace and drop a pod manifest into
+# /etc/kubernetes/manifests
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: naughty-goose
+  namespace: home
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: view
+subjects:
+- kind: ServiceAccount
+  name: goose
+  namespace: garden
+---
+# must be ClusterRole instead of role to be able to impersonate sa
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: naughty-goose
+rules:
+- apiGroups: [""]
+  resources: ["users", "groups", "serviceaccounts"]
+  verbs: ["impersonate"]
+  # system:authenticated is required to be added to impersonate the groundskeeper sa correctly.
+  resourceNames: ["groundskeeper", "system:authenticated"] 
+- apiGroups: ["authentication.k8s.io"]
+  resources: ["userextras/scopes"]
+  verbs: ["impersonate"]
+- apiGroups: [""]
+  # cannot limit with resourceNames to enumerate just the desired ns's (garden, home)
+  resources: ["namespaces"] 
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: naughty-goose
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: naughty-goose
+subjects:
+- kind: ServiceAccount
+  name: goose
+  namespace: garden

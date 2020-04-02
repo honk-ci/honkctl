@@ -1,0 +1,24 @@
+# ALL the namespaces are created first to prevent clashing when resolving cross
+# namespace references in [cluster]roles.
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: home
+  labels:
+    location: etc-kubernetes-manifests
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: garden
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: pub
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: model-village

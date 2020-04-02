@@ -1,0 +1,160 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: barkeep
+  namespace: pub
+  labels:
+    host: 'true'
+    pint-glass: 'true'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: barkeep
+  namespace: pub
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: edit
+subjects:
+- kind: ServiceAccount
+  name: barkeep
+  namespace: pub
+---
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  annotations:
+    seccomp.security.alpha.kubernetes.io/allowedProfileNames: 'docker/default'
+    seccomp.security.alpha.kubernetes.io/defaultProfileName:  'docker/default'
+  name: barkeep
+spec:
+  defaultAddCapabilities:
+  - AUDIT_WRITE # OCI Spec default
+  - NET_BIND_SERVICE # OCI Spec default
+  - KILL # OCI Spec default
+  - CHOWN # needed for nginx
+  - SETUID # needed for nginx
+  - SETGID # needed for nginx
+  requiredDropCapabilities:
+  - ALL
+  allowPrivilegeEscalation: false
+  hostIPC: false
+  hostNetwork: false
+  hostPID: false
+  privileged: false
+  readOnlyRootFilesystem: false
+  runAsUser:
+    rule: 'RunAsAny'
+  seLinux:
+    rule: 'RunAsAny'
+  supplementalGroups:
+    rule: 'RunAsAny'
+  fsGroup:
+    rule: 'RunAsAny'
+  volumes:
+  - 'configMap'
+  - 'downwardAPI'
+  - 'emptyDir'
+  - 'persistentVolumeClaim'
+  - 'projected'
+  - 'secret'
+  - 'hostPath' # hostpath for access to /etc/kubernetes/manifests
+  allowedHostPaths:
+   - pathPrefix: "/etc/kubernetes/manifests" # pretty much god rights ¯\_(ツ)_/¯
+     readOnly: False
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: psp-barkeep
+rules:
+- apiGroups:
+  - policy
+  resourceNames:
+  - barkeep
+  resources:
+  - podsecuritypolicies
+  verbs:
+  - use
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: psp-barkeep
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: psp-barkeep
+subjects:
+- kind: ServiceAccount
+  name: barkeep
+  namespace: pub
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: barkeep
+  namespace: pub
+  labels:
+    host: 'true'
+    pint-glass: 'true'
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      host: 'true'
+      pint-glass: 'true'
+  template:
+    metadata:
+      labels:
+        host: 'true'
+        pint-glass: 'true'
+    spec:
+      serviceAccountName: barkeep
+      containers:
+      - name: barkeep
+        image: nginx:stable-alpine
+        resources:
+          limits:
+            memory: 10Mi
+            cpu: 100m
+        ports:
+        - containerPort: 80
+        volumeMounts:
+          - mountPath: /usr/share/nginx/html
+            name: pint-glass
+      volumes:
+      - name: pint-glass
+        configMap:
+          name: pint-glass
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pint-glass
+  namespace: pub
+data:
+  index.html: |2
+    <html>
+    <head>
+    <meta charset="UTF-8">
+    </head>
+    <body>
+    <pre>
+         __________
+        |__  __  __|
+    .---|  ::  ::  |
+    |  __|__;:__;:__|
+    | |  |  __  __  |
+    | |  |::  ::  ::|
+    | |  |::__;:__;:|
+    | |  |__  __  __|
+     . `.|  ::  ::  |
+      `..|  ::  ::  |
+          \ ::  :: /
+           \;:  ;:/
+            """"""
+    </pre>
+    </body>
+    </html>
