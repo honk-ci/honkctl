@@ -1,0 +1,39 @@
+apiVersion: honk.ci/v1
+kind: Todo
+metadata:
+  name: todo-1
+spec:
+  todo: "Steal the groundskeepers keys."
+  hint: "Sometimes one must become that they honk to reach ones goals."
+---
+apiVersion: honk.ci/v1
+kind: Todo
+metadata:
+  name: todo-2
+spec:
+  todo: "Get to the Pub."
+  hint: "Let's go to the Winchester, have a nice cold pint, and wait for this all to blow over."
+---
+apiVersion: honk.ci/v1
+kind: Todo
+metadata:
+  name: todo-3
+spec:
+  todo: "Get into the model-village."
+  hint: "the grizzly knows the way"
+---
+apiVersion: honk.ci/v1
+kind: Todo
+metadata:
+  name: todo-4
+spec:
+  todo: "Steal the beautiful miniature golden bell."
+  hint: ""
+---
+apiVersion: honk.ci/v1
+kind: Todo
+metadata:
+  name: todo-5
+spec:
+  todo: "...and take it all the way back home."
+  hint: "Cloning oneself should be illegal"

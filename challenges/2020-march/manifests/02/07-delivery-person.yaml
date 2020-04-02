@@ -1,0 +1,99 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: delivery-person
+  namespace: pub
+  labels:
+    box: 'true'
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: delivery-person
+  namespace: pub
+  labels:
+    box: 'true'
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      box: 'true'
+  template:
+    metadata:
+      labels:
+        box: 'true'
+    spec:
+      serviceAccountName: delivery-person
+      containers:
+      - name: delivery-person
+        image: nginx:stable-alpine
+        resources:
+          limits:
+            memory: 10Mi
+            cpu: 100m
+        ports:
+        - containerPort: 80
+        volumeMounts:
+          - mountPath: /usr/share/nginx/html
+            name: box
+      volumes:
+      - name: box
+        configMap:
+          name: box
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: box
+  namespace: pub
+data:
+  index.html: |
+    <html>
+    <head>
+    <meta charset="UTF-8">
+    </head>
+    <body>
+    <pre>
+                    _.                              _______
+               __.--'  |             ____...,---'''''     .'''-.
+           _,-'        \ ____...--'''                     | '   '-._
+        ,-'             |                                 |  \      -.
+     ,-'                '                                 |   '       `\
+    |                    \                               .'    '   _,._/
+    |                     \                              |      '  \
+    |                     \                              |       \  '
+    ||                     \                             |        \<
+    |\                      \                           |          \|
+    |'.                     \                           /           |
+    | |                      \                         |            '
+    | '.                      |                  ____,..             \
+    |  |                       \__,...-----''''''       `.            |
+    |  '.                      \                          \           '
+    |   |                       \                          `           \
+    |   '                        \                          `           |
+    |    |                        \                          \          \
+    |    '.                       '                           \          \
+    |     \                        \                           \       _,|
+    |      |                        \                           \ _,.--  |
+    |      '.                        ,                       _,.-'       |
+    '       \                  _,.-''                 __.,-''            |
+     |       |             _.-'                _,.,--'                   |
+     \        \        _.-'           __,.,--''                          |
+     '        `.    ,-'      __..---''                                   |
+     '         \ ,-'___..,--'                                            '
+      \         -'''                                                     .
+       .        |                                                        ,
+        |       |                                                       |
+        '       |                                                       |
+         \      |                                                       |
+          \     |                                                       |
+           \    |                                            __,.-''
+            \   |                                        __,..-''
+             \  |                              ___..--'''
+              \ |                     ___,.--''
+               \|        ____...,--'''
+                '_..,--''
+    </pre>
+    </body>
+    </html>

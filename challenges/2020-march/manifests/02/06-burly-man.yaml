@@ -1,0 +1,132 @@
+---
+# burly-man opens up the garbage can to access the model-village
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: burly-man
+  namespace: pub
+  labels:
+    bucket: 'true'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: view-namespaces
+rules:
+- apiGroups: [""]
+  # cannot limit with resourceNames to enumerate just the desired ns's (garden, home)
+  resources: ["namespaces"] 
+  verbs: ["get", "list", "watch"]
+---
+# the burly-man is allowed to view namespaces as a convienence item
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: burly-man-view-namespaces
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: naughty-goose
+subjects:
+- kind: ServiceAccount
+  name: burly-man
+  namespace: pub
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: burly-man
+  namespace: pub
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: view
+subjects:
+- kind: ServiceAccount
+  name: burly-man
+  namespace: pub
+---
+# burly-man has rights to view the model village.
+# The bell pod manifest can be grabbed that way.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: burly-man
+  namespace: model-village
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: view
+subjects:
+- kind: ServiceAccount
+  name: burly-man
+  namespace: pub
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: burly-man
+  namespace: pub
+  labels:
+    bucket: 'true'
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      bucket: 'true'
+  template:
+    metadata:
+      labels:
+        bucket: 'true'
+    spec:
+      serviceAccountName: burly-man
+      containers:
+      - name: burly-man
+        image: nginx:stable-alpine
+        resources:
+          limits:
+            memory: 10Mi
+            cpu: 100m
+        ports:
+        - containerPort: 80
+        volumeMounts:
+          - mountPath: /usr/share/nginx/html
+            name: bucket
+      volumes:
+      - name: bucket
+        configMap:
+          name: bucket
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bucket
+  namespace: pub
+data:
+  index.html: |2
+    <html>
+    <head>
+    <meta charset="UTF-8">
+    </head>
+    <body>
+    <pre>
+        _.-()______)-._
+      .'               '.
+     /                   \
+    :      _________      :
+    |.--'''         '''--.|
+    (                     )
+    :'--..._________...--':
+    :                     :
+     :                   :
+     :                   :
+      :                 :
+      :                 :
+       :               :
+       :               :
+        :             :
+        :_           _:
+          '''-----'''
+    </pre>
+    </body>
+    </html>
