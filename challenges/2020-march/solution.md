@@ -104,7 +104,7 @@ The hints for each challenge are as follows:
 
 **Hint:** Sometimes one must become that they honk to reach ones goals.
 
-This is easier than it first appears. There is another service account in th
+This is easier than it first appears. There is another service account in the
 garden namespace called "groundskeeper".
 
 ```
